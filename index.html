@@ -18,52 +18,59 @@
   <ul id="taskList"></ul>
 
   <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAZStpKVRXXv0F0tn7oarTcEjpeoetK-hQ",
-      authDomain: "test-dc2f8.firebaseapp.com",
-      projectId: "test-dc2f8",
-      storageBucket: "test-dc2f8.firebasestorage.app",
-      messagingSenderId: "827187406010",
-      appId: "1:827187406010:web:367ae6cd3f7060bf268e83",
-      measurementId: "G-DGL38X6STV"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZStpKVRXXv0F0tn7oarTcEjpeoetK-hQ",
+    authDomain: "test-dc2f8.firebaseapp.com",
+    projectId: "test-dc2f8",
+    storageBucket: "test-dc2f8.firebasestorage.app",
+    messagingSenderId: "827187406010",
+    appId: "1:827187406010:web:367ae6cd3f7060bf268e83",
+    measurementId: "G-DGL38X6STV",
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // ✅ السطر المهم:
+    databaseURL: "https://test-dc2f8-default-rtdb.europe-west1.firebasedatabase.app"
+  };
 
-    const taskInput = document.getElementById("taskInput");
-    const taskList = document.getElementById("taskList");
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    // إضافة مهمة
-    window.addTask = function () {
-      const task = taskInput.value.trim();
-      if (task === "") return;
+  const taskInput = document.getElementById("taskInput");
+  const taskList = document.getElementById("taskList");
+
+  window.addTask = async function () {
+    const task = taskInput.value.trim();
+    if (task === "") return;
+
+    try {
       const taskRef = push(ref(db, "tasks"));
-      set(taskRef, { text: task });
+      await set(taskRef, { text: task });
       taskInput.value = "";
-    };
+    } catch (error) {
+      console.error("خطأ في الإضافة:", error);
+    }
+  };
 
-    // عرض المهام وتحديثها لحظيًا
-    const tasksRef = ref(db, "tasks");
-    onValue(tasksRef, snapshot => {
-      taskList.innerHTML = "";
-      snapshot.forEach(child => {
-        const li = document.createElement("li");
-        li.textContent = child.val().text;
+  const tasksRef = ref(db, "tasks");
+  onValue(tasksRef, snapshot => {
+    taskList.innerHTML = "";
+    snapshot.forEach(child => {
+      const li = document.createElement("li");
+      li.textContent = child.val().text;
 
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "🗑️ حذف";
-        delBtn.classList.add("delete");
-        delBtn.onclick = () => remove(ref(db, "tasks/" + child.key));
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ حذف";
+      delBtn.classList.add("delete");
+      delBtn.onclick = () => remove(ref(db, "tasks/" + child.key));
 
-        li.appendChild(delBtn);
-        taskList.appendChild(li);
-      });
+      li.appendChild(delBtn);
+      taskList.appendChild(li);
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
